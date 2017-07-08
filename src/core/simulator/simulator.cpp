@@ -145,6 +145,13 @@ namespace argos {
       InitMedia(GetNode(m_tConfigurationRoot, "media"));
       /* Space */
       InitSpace(GetNode(m_tConfigurationRoot, "arena"));
+
+      /* URDF */
+      if (NodeExists(m_tConfigurationRoot, "robot")) {
+         TConfigurationNode& cRobotNode = GetNode(m_tConfigurationRoot, "robot");
+         InitRobotURDFModel(cRobotNode);
+      }
+
       /* Call user init function */
       if(NodeExists(m_tConfigurationRoot, "loop_functions")) {
          m_pcLoopFunctions->Init(GetNode(m_tConfigurationRoot, "loop_functions"));
@@ -482,6 +489,49 @@ namespace argos {
       }
       catch(CARGoSException& ex) {
          THROW_ARGOSEXCEPTION_NESTED("Failed to initialize the space.", ex);
+      }
+   }
+
+   /****************************************/
+   /****************************************/
+
+   void CSimulator::InitRobotURDFModel(TConfigurationNode& t_tree) {
+      try {
+         LOG << "ROBOT MODEL: " << std::endl;
+         CURDFParser urdf_parser;
+         CURDFModel urdf = urdf_parser.ParseURDF(t_tree);
+
+         // log robot model
+         LOG << "Robot Name: "; LOG << urdf.m_strName << std::endl;         
+
+         // Log some robot link attributes
+         for (UInt32 i = 0; i < urdf.m_vecLinks.size(); i++) {
+            LOG << "Link name: "; LOG << urdf.m_vecLinks[i].m_strName << std::endl;
+            LOG << "Link mass: "; LOG << urdf.m_vecLinks[i].m_sInertial.m_fMass << std::endl;
+            LOG << "Link color: " << std::endl;
+            LOG << "R: "; LOG << urdf.m_vecLinks[i].m_sVisual.m_sMaterial.m_sColor.m_fR << std::endl;
+            LOG << "G: "; LOG << urdf.m_vecLinks[i].m_sVisual.m_sMaterial.m_sColor.m_fG << std::endl;
+            LOG << "B: "; LOG << urdf.m_vecLinks[i].m_sVisual.m_sMaterial.m_sColor.m_fB << std::endl;
+            LOG << "A: "; LOG << urdf.m_vecLinks[i].m_sVisual.m_sMaterial.m_sColor.m_fA << std::endl;
+            LOG << "Link inertial origin xyz: " << std::endl; 
+            LOG << "X: "; LOG << urdf.m_vecLinks[i].m_sInertial.m_sOrigin.m_cXYZ.GetX() << std::endl;
+            LOG << "Y: "; LOG << urdf.m_vecLinks[i].m_sInertial.m_sOrigin.m_cXYZ.GetY() << std::endl;
+            LOG << "Z: "; LOG << urdf.m_vecLinks[i].m_sInertial.m_sOrigin.m_cXYZ.GetZ() << std::endl;
+         }
+
+         // Log some robot joint attributes
+         for (UInt32 i = 0; i < urdf.m_vecJoints.size(); i++) {
+            LOG << "Joint name: "; LOG << urdf.m_vecJoints[i].m_strName << std::endl;
+            LOG << "Joint type: "; LOG << urdf.m_vecJoints[i].m_strType << std::endl;
+            LOG << "Joint friction: "; LOG << urdf.m_vecJoints[i].m_sDynamics.m_fFriction << std::endl;
+            LOG << "Joint axis xyz: " << std::endl; 
+            LOG << "X: "; LOG << urdf.m_vecJoints[i].m_sAxis.m_cXYZ.GetX() << std::endl;
+            LOG << "Y: "; LOG << urdf.m_vecJoints[i].m_sAxis.m_cXYZ.GetY() << std::endl;
+            LOG << "Z: "; LOG << urdf.m_vecJoints[i].m_sAxis.m_cXYZ.GetZ() << std::endl;
+         }
+      }
+      catch(CARGoSException& ex) {
+         THROW_ARGOSEXCEPTION_NESTED("Failed to initialize the URDF model.", ex);
       }
    }
 

@@ -492,10 +492,6 @@ namespace argos {
                                 const UInt8 un_value) {
       t_node.SetAttribute(str_attribute, static_cast<UInt32>(un_value));
    }
-
-   /****************************************/
-   /****************************************/
-
 }
 
 #endif

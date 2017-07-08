@@ -39,8 +39,10 @@ namespace argos {
 #include <argos3/core/utility/datatypes/datatypes.h>
 #include <argos3/core/simulator/physics_engine/physics_engine.h>
 #include <argos3/core/simulator/medium/medium.h>
+#include <argos3/core/utility/configuration/urdf/urdf_parser.h>
 #include <string>
 #include <map>
+
 
 /**
  * @brief The namespace containing all the ARGoS related code.
@@ -368,6 +370,9 @@ namespace argos {
       void InitLoopFunctions(TConfigurationNode& t_tree);
       void InitControllers(TConfigurationNode& t_tree);
       void InitSpace(TConfigurationNode& t_tree);
+
+      void InitRobotURDFModel(TConfigurationNode& t_tree);
+      
       void InitPhysics(TConfigurationNode& t_tree);
       void InitPhysics2();
       void InitMedia(TConfigurationNode& t_tree);
