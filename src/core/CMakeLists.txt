@@ -12,12 +12,6 @@ set(ARGOS3_HEADERS_UTILITY_CONFIGURATION
   utility/configuration/base_configurable_resource.h
   utility/configuration/command_line_arg_parser.h
   utility/configuration/memento.h)
-# argos3/core/utility/configuration/urdf
-set(ARGOS3_HEADERS_UTILITY_CONFIGURATION_URDF
-  utility/configuration/urdf/urdf_parser.h
-  utility/configuration/urdf/joint.h
-  utility/configuration/urdf/link.h
-  utility/configuration/urdf/model.h)
 # argos3/core/utility/configuration/tinyxml
 set(ARGOS3_HEADERS_UTILITY_CONFIGURATION_TINYXML
   utility/configuration/tinyxml/ticpp.h
@@ -128,11 +122,6 @@ set(ARGOS3_SOURCES_CORE
   utility/string_utilities.cpp
   ${ARGOS3_HEADERS_UTILITY_CONFIGURATION}
   utility/configuration/command_line_arg_parser.cpp
-  ${ARGOS3_HEADERS_UTILITY_CONFIGURATION_URDF}
-  utility/configuration/urdf/urdf_parser.cpp
-  utility/configuration/urdf/joint.cpp
-  utility/configuration/urdf/link.cpp
-  utility/configuration/urdf/model.cpp
   ${ARGOS3_HEADERS_UTILITY_CONFIGURATION_TINYXML}
   utility/configuration/tinyxml/ticpp.cpp
   utility/configuration/tinyxml/tinystr.cpp
@@ -232,7 +221,6 @@ endif(ARGOS_WITH_LUA)
 # Core library installation
 install(FILES ${ARGOS3_HEADERS_UTILITY}                       DESTINATION include/argos3/core/utility)
 install(FILES ${ARGOS3_HEADERS_UTILITY_CONFIGURATION}         DESTINATION include/argos3/core/utility/configuration)
-install(FILES ${ARGOS3_HEADERS_UTILITY_CONFIGURATION_URDF}    DESTINATION include/argos3/core/utility/configuration/urdf)
 install(FILES ${ARGOS3_HEADERS_UTILITY_CONFIGURATION_TINYXML} DESTINATION include/argos3/core/utility/configuration/tinyxml)
 install(FILES ${ARGOS3_HEADERS_UTILITY_DATATYPES}             DESTINATION include/argos3/core/utility/datatypes)
 install(FILES ${ARGOS3_HEADERS_UTILITY_LOGGING}               DESTINATION include/argos3/core/utility/logging)

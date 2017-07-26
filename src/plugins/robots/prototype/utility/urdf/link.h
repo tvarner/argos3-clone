@@ -9,6 +9,10 @@
 #ifndef LINK_H
 #define LINK_H
 
+#include <argos3/plugins/robots/prototype/simulator/box_geometry3.h>
+#include <argos3/plugins/robots/prototype/simulator/cylinder_geometry3.h>
+#include <argos3/plugins/robots/prototype/simulator/sphere_geometry3.h>
+#include <argos3/plugins/robots/prototype/simulator/mesh.h>
 #include <argos3/core/utility/math/vector3.h>
 #include <string>
 
@@ -27,7 +31,7 @@ namespace argos {
         Real m_fIYZ;
         Real m_fIZZ;
       };
-
+ 
       struct SOrigin {
         CVector3 m_cXYZ;
         CVector3 m_cRPY;
@@ -37,31 +41,6 @@ namespace argos {
         Real m_fMass;
         SOrigin m_sOrigin;
         SInertia m_sInertia;
-      };
-
-      struct SBox {
-        CVector3 m_cSize;
-      };
-
-      struct SCylinder {
-        Real m_fRadius;
-        Real m_fLength;
-      };
-
-      struct SSphere {
-        Real m_fRadius;
-      };
-
-      struct SMesh {
-        std::string m_strFilename;
-        Real m_fScale;
-      };
-
-      struct SGeometry {
-        SBox m_sBox;
-        SCylinder m_sCylinder;
-        SSphere m_sSphere;
-        SMesh m_sMesh;
       };
 
       struct SColor {
@@ -80,17 +59,23 @@ namespace argos {
       struct SVisual {
         std::string m_strName;
         SOrigin m_sOrigin;
-        SGeometry m_sGeometry;
+        CGeometry m_cGeometry;
         SMaterial m_sMaterial;
       };
 
       struct SCollision { 
         std::string m_strName;
         SOrigin m_sOrigin;
-        SGeometry m_sGeometry;
+        CGeometry m_cGeometry;
       }; 
 
       std::string m_strName;
+
+      std::string m_strParentLink;
+
+      std::string m_strParentJoint;
+
+      std::vector<std::string> m_vecChildrenLinks;
 
       SInertial m_sInertial;
 

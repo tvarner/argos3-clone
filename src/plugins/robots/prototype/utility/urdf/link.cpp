@@ -11,5 +11,7 @@ namespace argos {
   /****************************************/
   /****************************************/
 
-  CURDFLink::CURDFLink() {}
+  CURDFLink::CURDFLink() : 
+  m_strParentLink(""),
+  m_strParentJoint("") {}
 }

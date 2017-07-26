@@ -18,6 +18,11 @@ namespace argos {
       // Joint contstructor 
       CURDFJoint();
 
+      struct SOrigin {
+        CVector3 m_cXYZ;
+        CVector3 m_Origin;
+      }
+
       struct SAxis { 
         CVector3 m_cXYZ;
         CVector3 m_cRPY;
@@ -59,7 +64,7 @@ namespace argos {
 
       std::string m_strParent;
 
-      std::vector<std::string> m_vecChildren;
+      std::string m_strChild;
 
       SAxis m_sAxis;
 

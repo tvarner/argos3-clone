@@ -11,10 +11,10 @@
 
 #include <argos3/core/utility/logging/argos_log.h>
 #include <argos3/core/utility/configuration/argos_configuration.h>
-#include <argos3/core/utility/configuration/urdf/model.h>
 #include <argos3/core/utility/string_utilities.h>
 #include <argos3/core/utility/datatypes/datatypes.h>
 #include <argos3/core/utility/configuration/argos_exception.h>
+#include "model.h"
 #include <string>
 
 namespace argos {

@@ -14,15 +14,23 @@ namespace argos {
 	CURDFParser::CURDFParser() {}
 
 	CURDFModel CURDFParser::ParseURDF(TConfigurationNode& c_robot_node) {
-		CURDFModel cRobotModel; 
+		CURDFModel cRobotModel;
+
+		if (NodeAttributeExists(c_robot_node, "name")) { 
+			GetNodeAttribute(c_robot_node, "name", cRobotModel.m_strName); // parse link named
+		} else { 
+			THROW_ARGOSEXCEPTION("Robot name attribute is required ");
+		}
+
 		ParseLinks(cRobotModel, c_robot_node);
 		ParseJoints(cRobotModel, c_robot_node);
+		cRobotModel.InitRoot();
 		return cRobotModel;
 	}
 
 	void CURDFParser::ParseLinks(CURDFModel& c_robot_model, TConfigurationNode& c_robot_node) {
 		std::vector<CURDFLink> vecLinks;
-		TConfigurationNodeIterator itLinkNode("link");
+c
 		for ( itLinkNode = itLinkNode.begin( &c_robot_node ); itLinkNode != itLinkNode.end(); itLinkNode++ ) {
 
 			// create link
@@ -45,6 +53,10 @@ namespace argos {
 			vecJoints.push_back(cJoint);
 		}
 		c_robot_model.m_vecJoints = vecJoints;
+	}
+
+	void CURDFParser::SetRootLink(CURDFModel& c_robot_model) { 
+
 	}
 
 	CURDFLink CURDFParser::ParseLink(TConfigurationNode& c_link_node) {
@@ -171,7 +183,7 @@ namespace argos {
 
 			if (NodeExists(cVisualNode, "geometry")) { 
 				TConfigurationNode& cGeometryNode = GetNode(cVisualNode, "geometry");
-				ParseLinkVisualGeometry(c_link, cGeometryNode);			
+				ParseGeometry(c_link, cGeometryNode, "visual");			
 			} else { 
 				THROW_ARGOSEXCEPTION("Link visual geometry is required");
 			}
@@ -259,12 +271,12 @@ namespace argos {
 			// parse collision geometry
 			if (NodeExists(cCollisionNode, "geometry")) { 
 				TConfigurationNode& cGeometryNode = GetNode(cCollisionNode, "geometry");
-				ParseLinkCollisionGeometry(c_link, cGeometryNode);	
+				ParseGeometry(c_link, cGeometryNode, "collision");	
 			}
 		}
 	}
 
-	void CURDFParser::ParseLinkVisualGeometry(CURDFLink& c_link, TConfigurationNode& c_geometry_node) { 
+	void CURDFParser::ParseGeometry(CURDFLink& c_link, TConfigurationNode& c_geometry_node, std::string strType) { 
 		
 		// parse geometry box
 		if (NodeExists(c_geometry_node, "box")) { 
@@ -278,7 +290,15 @@ namespace argos {
 				Real fSizeX = FromString<Real>(vecSize[0]);
 				Real fSizeY = FromString<Real>(vecSize[1]);
 				Real fSizeZ = FromString<Real>(vecSize[2]);
-				c_link.m_sVisual.m_sGeometry.m_sBox.m_cSize = CVector3( fSizeX, fSizeY, fSizeZ );
+				CVector3 cSize = new CVector3( fSizeX, fSizeY, fSizeZ );
+
+				if (strType == "visual") { 
+					link.m_sVisual.m_cGeometry = new CBoxGeometry3(cSize);
+				} else if (strType == "collision") { 
+					link.m_sCollision.m_cGeometry = new CBoxGeometry3(cSize);
+				} else { 
+					THROW_ARGOSEXCEPTION("Invalid geometry type. Options are: 'visual' or 'collision'.")
+				}
 			}
 		}
 
@@ -286,77 +306,26 @@ namespace argos {
 		if (NodeExists(c_geometry_node, "cylinder")) { 
 			TConfigurationNode& cCylinderNode = GetNode(c_geometry_node, "cylinder");
 			
+			Real fRadius;
+			Real fHeight;
 			if (NodeAttributeExists(cCylinderNode, "radius")) {
 				std::string strCylinderRadius;
 				GetNodeAttribute(cCylinderNode, "radius", strCylinderRadius);
-				c_link.m_sVisual.m_sGeometry.m_sCylinder.m_fRadius = FromString<Real>(strCylinderRadius);
+				fRadius = FromString<Real>(strCylinderRadius);
 			}
 
 			if (NodeAttributeExists(cCylinderNode, "length")) {
 				std::string strCylinderLength;
 				GetNodeAttribute(cCylinderNode, "length", strCylinderLength);
-				c_link.m_sVisual.m_sGeometry.m_sCylinder.m_fLength = FromString<Real>(strCylinderLength);
-			}
-		}
-
-		// parse geometry sphere
-		if (NodeExists(c_geometry_node, "sphere")) { 
-			TConfigurationNode& cSphereNode = GetNode(c_geometry_node, "sphere");
-			
-			if (NodeAttributeExists(cSphereNode, "radius")) {
-				std::string strSphereRadius;
-				GetNodeAttribute(cSphereNode, "radius", strSphereRadius);
-				c_link.m_sVisual.m_sGeometry.m_sSphere.m_fRadius = FromString<Real>(strSphereRadius);
-			}
-		}
-
-		// parse geometry mesh
-		if (NodeExists(c_geometry_node, "mesh")) { 
-			TConfigurationNode& cMeshNode = GetNode(c_geometry_node, "mesh");
-
-			if (NodeAttributeExists(cMeshNode, "filename")) { 
-				GetNodeAttribute(cMeshNode, "filename", c_link.m_sVisual.m_sGeometry.m_sMesh.m_strFilename);
+				fHeight = FromString<Real>(strCylinderLength);
 			}
 
-			if (NodeAttributeExists(cMeshNode, "scale")) {
-				std::string strScale;
-				GetNodeAttribute(cMeshNode, "scale", strScale);
-				c_link.m_sVisual.m_sGeometry.m_sMesh.m_fScale = FromString<Real>(strScale);
-			}
-		}
-	}
-
-	void CURDFParser::ParseLinkCollisionGeometry(CURDFLink& c_link, TConfigurationNode& c_geometry_node) {
-		// parse geometry box
-		if (NodeExists(c_geometry_node, "box")) {
-			TConfigurationNode& cBoxNode = GetNode(c_geometry_node, "box");
-			
-			if (NodeAttributeExists(cBoxNode, "size")) { 
-				std::string strBoxSize;
-				GetNodeAttribute(cBoxNode, "size", strBoxSize);
-				std::vector<std::string> vecSize;
-				Tokenize(strBoxSize, vecSize);
-				Real fSizeX = FromString<Real>(vecSize[0]);
-				Real fSizeY = FromString<Real>(vecSize[1]);
-				Real fSizeZ = FromString<Real>(vecSize[2]);
-				c_link.m_sCollision.m_sGeometry.m_sBox.m_cSize = CVector3( fSizeX, fSizeY, fSizeZ );
-			}
-		}
-
-		// parse geometry cylinder
-		if (NodeExists(c_geometry_node, "cylinder")) { 
-			TConfigurationNode& cCylinderNode = GetNode(c_geometry_node, "cylinder");
-
-			if (NodeAttributeExists(cCylinderNode, "radius")) { 
-				std::string strCylinderRadius;
-				GetNodeAttribute(cCylinderNode, "radius", strCylinderRadius);
-				c_link.m_sCollision.m_sGeometry.m_sCylinder.m_fRadius = FromString<Real>(strCylinderRadius);
-			}
-
-			if (NodeAttributeExists(cCylinderNode, "length")) { 
-				std::string strCylinderLength;
-				GetNodeAttribute(cCylinderNode, "length", strCylinderLength);
-				c_link.m_sCollision.m_sGeometry.m_sCylinder.m_fLength = FromString<Real>(strCylinderLength);
+			if (strType == "visual") { 
+				link.m_sVisual.m_cGeometry = new CCylinderGeometry3(fRadius, fHeight);
+			} else if (strType == "collision") { 
+				link.m_sCollision.m_cGeometry = new CCylinderGeometry3(fRadius, fHeight);
+			} else { 
+				THROW_ARGOSEXCEPTION("Invalid geometry type. Options are: 'visual' or 'collision'.")
 			}
 		}
 
@@ -364,10 +333,19 @@ namespace argos {
 		if (NodeExists(c_geometry_node, "sphere")) { 
 			TConfigurationNode& cSphereNode = GetNode(c_geometry_node, "sphere");
 
+			Real fRadius;
 			if (NodeAttributeExists(cSphereNode, "radius")) {
 				std::string strSphereRadius;
 				GetNodeAttribute(cSphereNode, "radius", strSphereRadius);
-				c_link.m_sCollision.m_sGeometry.m_sSphere.m_fRadius = FromString<Real>(strSphereRadius);
+				fRadius = FromString<Real>(strSphereRadius);
+			}
+
+			if (strType == "visual") { 
+				link.m_sVisual.m_cGeometry = new CSphereGeometry3(fRadius);
+			} else if (strType == "collision") { 
+				link.m_sCollision.m_cGeometry = new CSphereGeometry3(fRadius);
+			} else { 
+				THROW_ARGOSEXCEPTION("Invalid geometry type. Options are: 'visual' or 'collision'.")
 			}
 		}
 
@@ -375,14 +353,25 @@ namespace argos {
 		if (NodeExists(c_geometry_node, "mesh")) { 
 			TConfigurationNode& cMeshNode = GetNode(c_geometry_node, "mesh");
 
+			std::string strFilename;
+			Real fScale;
+
 			if (NodeAttributeExists(cMeshNode, "filename")) { 
-				GetNodeAttribute(cMeshNode, "filename", c_link.m_sCollision.m_sGeometry.m_sMesh.m_strFilename);
+				GetNodeAttribute(cMeshNode, "filename", strFilename);
 			}
 
 			if (NodeAttributeExists(cMeshNode, "scale")) {
 				std::string strScale;
 				GetNodeAttribute(cMeshNode, "scale", strScale);
-				c_link.m_sCollision.m_sGeometry.m_sMesh.m_fScale = FromString<Real>(strScale);
+				fScale = FromString<Real>(strScale);
+			}
+
+			if (strType == "visual") { 
+				link.m_sVisual.m_cGeometry = new CGeometryMeshGeometry3(strFilename, fScale);
+			} else if (strType == "collision") { 
+				link.m_sCollision.m_cGeometry = new CGeometryMeshGeometry3(strFilename, fScale);
+			} else { 
+				THROW_ARGOSEXCEPTION("Invalid geometry type. Options are: 'visual' or 'collision'.")
 			}
 		}
 	}
@@ -418,23 +407,54 @@ namespace argos {
 
 		// parse children
 		if (NodeExists(c_joint_node, "child")) { 
-			// parse children
-			std::vector<std::string> vecChildren;
-			TConfigurationNodeIterator itChildNode("child");
+			TConfigurationNode& cChildNode = GetNode(c_joint_node, "child");
 
-			for ( itChildNode = itChildNode.begin( &c_joint_node ); itChildNode != itChildNode.end(); itChildNode++ ) {
-				if (NodeAttributeExists( *itChildNode , "link") ) { 
-					std::string strChildLink; 
-					GetNodeAttribute( *itChildNode , "link", strChildLink);
-
-					// add link to vector
-					vecChildren.push_back(strChildLink);
-				}
+			if (NodeAttributeExists(cChildNode, "link")) { 
+				GetNodeAttribute(cChildNode, "link", cJoint.m_strChild);
 			}
-			cJoint.m_vecChildren = vecChildren;
 		} else { 
 			THROW_ARGOSEXCEPTION("Joint child is required");
 		}
+
+		// set children links on parent link, and parent link on children links
+		// set parent joint on each link
+		CURFLink& parentLink = urdf.GetLink(cJoint.m_strParent);
+		parentLink.m_vecChildrenLinks = cJoint.m_vecChildren;
+		for (int i = 0, i < parentLink.m_vecChildrenLinks.size(), i++) { 
+			urdf.GetLink(parentLink.m_vecChildrenLinks[i]).m_strParentLink = parentLink.m_strName;
+			urdf.GetLink(parentLink.m_vecChildrenLinks[i]).m_strParentJoint = cJoint.m_strName;
+		}
+
+		// parse joint origin
+		if (NodeExists(c_joint_node, "origin")) {
+			TConfigurationNode& cOriginNode = GetNode(cInertialNode, "origin");
+
+			if (NodeAttributeExists(cOriginNode, "xyz")) {
+				std::string strOriginXYZ;
+				GetNodeAttribute(cOriginNode, "xyz", strOriginXYZ);
+				std::vector<std::string> vexXYZ;
+				Tokenize(strOriginXYZ, vexXYZ);
+				Real fOriginX = FromString<Real>(vexXYZ[0]);
+				Real fOriginY = FromString<Real>(vexXYZ[1]);
+				Real fOriginZ = FromString<Real>(vexXYZ[2]);
+				cJoint.m_sOrigin.m_cXYZ = CVector3( fOriginX, fOriginY, fOriginZ );
+			} else { 
+				cJoint.m_sOrigin.m_cXYZ = CVector3( 0 , 0 , 0 );
+			}
+
+			if (NodeAttributeExists(cOriginNode, "rpy")) { 
+				std::string strOriginRPY;
+				GetNodeAttribute(cOriginNode, "rpy", strOriginRPY);
+				std::vector<std::string> vecRPY;
+				Tokenize(strOriginRPY, vecRPY);
+				Real fOriginR = FromString<Real>(vecRPY[0]);
+				Real fOriginP = FromString<Real>(vecRPY[1]);
+				Real fOriginY = FromString<Real>(vecRPY[2]);
+				cJoint.m_sOrigin.m_cRPY = CVector3( fOriginR, fOriginP, fOriginY );
+			} else { 
+				cJoint.m_sOrigin.m_cRPY = CVector3( 0 , 0 , 0 );
+			}
+		}		
 
 		// parse axis node
 		if (NodeExists(c_joint_node, "axis")) { 

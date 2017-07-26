@@ -11,7 +11,7 @@ namespace argos {
   /****************************************/
   /****************************************/
 
-  CURDFModel::CURDFModel() {
+  CURDFModel::CURDFModel() : {
 
     // SetRootLink();
   }
@@ -38,6 +38,17 @@ namespace argos {
     THROW_ARGOSEXCEPTION("Joint not found ");
   }
 
-  // TODO:
-  // CURDFLink* getRoot() {};
+  // @todo:
+  void InitRoot() {
+    // iterate through joints
+    for (int i = 0; i < m_vecJoints.size(); i++) {
+
+      CURDFLink& parent_link = GetLink(m_vecJoints[i].m_strParent);
+      
+    }
+  };
+
+  CURDFLink& getRootLink() {
+
+  };
 }

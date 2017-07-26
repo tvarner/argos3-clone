@@ -11,5 +11,7 @@ namespace argos {
   /****************************************/
   /****************************************/
 
-  CURDFJoint::CURDFJoint() {}
+  CURDFJoint::CURDFJoint() :
+    m_strParent(""),
+    m_strChild("") {}
 }

@@ -28,11 +28,10 @@ namespace argos {
       // return link given link name
       CURDFLink& GetLink(std::string link_name);
 
-      // return root link
-      CURDFLink& GetRoot();
-
       // return joint given joint name
       CURDFJoint& GetJoint(std::string joint_name);
+
+      CURDFLink& getRootLink();
 
       std::string m_strName;
 
